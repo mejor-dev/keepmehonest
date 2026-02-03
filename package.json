@@ -1,0 +1,36 @@
+{
+  "name": "@mejor/keepmehonest",
+  "version": "0.1.0",
+  "description": "KMH: commit-message workflows for Claude Code (/kmh:commit), Codex skills ($kmh-commit), and OpenCode (/kmh-commit).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "kmh": "bin/kmh.js"
+  },
+  "files": [
+    "bin/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "conventional-commits",
+    "semantic-release",
+    "claude",
+    "codex",
+    "opencode",
+    "git",
+    "commit"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mejordev/keepmehonest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mejordev/keepmehonest/issues"
+  },
+  "homepage": "https://github.com/mejordev/keepmehonest#readme"
+}

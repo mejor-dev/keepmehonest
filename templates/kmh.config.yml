@@ -1,0 +1,77 @@
+# KMH configuration (v1)
+# This file lets you override commit-type + scope preferences used by KMH commands/skills.
+
+version: 1
+
+defaults:
+  # Prefer semantic-release-compatible Conventional Commits.
+  allowedTypes:
+    - feat
+    - fix
+    - docs
+    - test
+    - chore
+    - refactor
+    - perf
+    - ci
+    - build
+    - revert
+    - style
+
+  # Enforce scopes by default (you can set to false if you don't want them).
+  requireScope: true
+
+  # Conventional wisdom: 72 chars for subject line
+  maxSubjectLength: 72
+
+  # Scope selection:
+  # - auto: derive from repo/package layout (see `scope.heuristics`)
+  # - string: hard default scope, e.g. "core"
+  defaultScope: auto
+
+  # Used if auto-derivation fails and requireScope is true
+  fallbackScope: core
+
+scope:
+  # Refinement you approved:
+  # 1) Single-package repo: use package.json name (strip @scope/)
+  # 2) Monorepo: derive scope from changed file path, preferring packages/*, apps/*, services/*, etc.
+  heuristics:
+    singlePackage:
+      fromPackageJsonName: true
+      stripNpmScope: true
+    monorepo:
+      # Ordered list: first matching directory wins
+      packageDirGlobs:
+        - packages/*
+        - apps/*
+        - services/*
+        - libs/*
+        - modules/*
+      preferChildPackageJsonName: true
+
+mappings:
+  # If a glob matches a file path in the staged changes, it can force a scope/type.
+  # These override the heuristics above.
+
+  scopeByGlob:
+    "docs/**": docs
+    ".github/**": ci
+    ".opencode/**": tooling
+    ".agents/**": tooling
+    ".kmh/**": tooling
+
+  typeByGlob:
+    "docs/**": docs
+    "**/*.md": docs
+    ".github/**": ci
+    ".opencode/**": chore
+    ".agents/**": chore
+    ".kmh/**": chore
+
+breakingChange:
+  # Hints for when to consider a breaking change (you can keep this empty).
+  # Agents should still use judgment: breaking API changes -> add '!' or BREAKING CHANGE footer.
+  fileGlobs:
+    - "src/public-api/**"
+    - "packages/*/src/public-api/**"

@@ -1,0 +1,10 @@
+{
+  "name": "kmh",
+  "description": "Keep Me Honest: commit message assistant for staged changes",
+  "version": "{{KMH_VERSION}}",
+  "author": {
+    "name": "mejordev"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/mejordev/keepmehonest"
+}
