@@ -27,10 +27,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mejordev/keepmehonest.git"
+    "url": "git+https://github.com/mejor-dev/keepmehonest.git"
   },
   "bugs": {
-    "url": "https://github.com/mejordev/keepmehonest/issues"
+    "url": "https://github.com/mejor-dev/keepmehonest/issues"
   },
-  "homepage": "https://github.com/mejordev/keepmehonest#readme"
+  "homepage": "https://github.com/mejor-dev/keepmehonest#readme"
 }
