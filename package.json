@@ -1,6 +1,6 @@
 {
   "name": "@mejor/keepmehonest",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "KMH: commit-message workflows for Claude Code (/kmh:commit), Codex skills ($kmh-commit), and OpenCode (/kmh-commit).",
   "license": "MIT",
   "type": "module",
