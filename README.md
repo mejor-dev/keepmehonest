@@ -1,8 +1,35 @@
 # @mejor/keepmehonest (KMH)
 
-KMH is a **commit workflow add-on** for JS/TS repos. It installs AI-friendly commands/skills that generate **semantic-release-compatible Conventional Commit** messages from your **staged** git changes.
+KMH is a **commit workflow add-on** for JS/TS repos.
 
-> Scope: **commits only** (no semantic-release/changelog setup, no self-release).
+It installs AI-friendly commands/skills that generate **semantic-release-compatible Conventional Commit** messages from your **staged git changes**.
+
+> Scope: **commits only** (no semantic-release setup, no changelog setup, no self-release automation).
+
+---
+
+## What you get
+
+### Commands
+
+- **Claude Code (plugin)**
+  - `/kmh:commit` — generate a single best commit message for the current staged changes
+  - `/kmh:commit-atomic` — propose a plan to split staged changes into atomic commits
+
+- **Codex CLI (skills)**
+  - `$kmh-commit`
+  - `$kmh-commit-atomic`
+
+- **OpenCode (project commands)**
+  - `/kmh-commit`
+  - `/kmh-commit-atomic`
+
+All variants aim to produce a Conventional Commit message that works well with semantic-release defaults:
+- `feat` → minor
+- `fix` → patch
+- `BREAKING CHANGE:` or `!` → major
+
+---
 
 ## Install into a repo
 
@@ -12,30 +39,29 @@ From your repo root:
 npx @mejor/keepmehonest init
 ```
 
-Or if you prefer explicit binary:
+The wizard will let you choose what to install:
+- Claude plugin
+- Codex skills
+- OpenCode commands
+- Optional `kmh.config.yml` (commit rules overrides)
+
+---
+
+## Usage (recommended workflow)
+
+### 1) Stage your changes
+
+KMH looks at **staged** changes only.
 
 ```bash
-npx -p @mejor/keepmehonest kmh init
+git add -A
+# or git add <files>
 ```
 
-KMH will create:
-- `kmh.config.yml` (optional) — commit rules + scope heuristics override
-- `.kmh/claude-plugin/` (optional) — Claude Code plugin (gives `/kmh:commit`)
-- `.agents/skills/` (optional) — Codex skills (gives `$kmh-commit`)
-- `.opencode/commands/` (optional) — OpenCode commands (gives `/kmh-commit`)
-- `docs/kmh.md` — usage + troubleshooting
+### 2) Generate a commit message
 
-## Usage
-
-### Claude Code
-
-KMH installs a **Claude Code plugin** at:
-
-```
-.kmh/claude-plugin/
-```
-
-For local testing, start Claude Code with:
+#### Claude Code
+Start Claude with the KMH plugin directory created by `init`:
 
 ```bash
 claude --plugin-dir ./.kmh/claude-plugin
@@ -43,55 +69,138 @@ claude --plugin-dir ./.kmh/claude-plugin
 
 Then run:
 
-- `/kmh:commit`
-- `/kmh:commit-atomic`
-
-> For a permanent install, package it into a marketplace and install via `/plugin`. (See Claude Code plugin docs.)
-
-### Codex CLI
-
-KMH installs Codex **skills** under:
-
 ```
-.agents/skills/kmh-commit/SKILL.md
-.agents/skills/kmh-commit-atomic/SKILL.md
+/kmh:commit
 ```
 
-Invoke them with:
+KMH will:
+- inspect staged diff
+- choose `type(scope): subject`
+- include a short body when helpful
+- flag breaking changes when detected
+
+#### Codex CLI
+
+Use the skill:
 
 - `$kmh-commit`
-- `$kmh-commit-atomic`
+- or `/skills` and select it
 
-Or select via `/skills`.
+#### OpenCode
 
-### OpenCode
-
-KMH installs project commands under:
-
-```
-.opencode/commands/kmh-commit.md
-.opencode/commands/kmh-commit-atomic.md
-```
-
-Invoke them with:
+Run:
 
 - `/kmh-commit`
-- `/kmh-commit-atomic`
 
-## Rules & scope heuristics
+---
 
-By default KMH expects Conventional Commits suitable for semantic-release:
+## Atomic commits
 
-- `feat` / `fix` drive versions
-- `BREAKING CHANGE:` footer or `!` indicates major releases
+Atomic mode is **guided by default**.
 
-**Scope (default refinement):**
-- **Single-package repo**: prefer `package.json` `name` (strip `@scope/`).
-- **Monorepo**: prefer changed file path under `packages/*`, `apps/*`, `services/*`, etc.
-- Overrides are controlled by `kmh.config.yml` (`scopeByGlob`, `defaultScope`, `fallbackScope`, ...).
+It will propose **multiple commits** (each with a message + file grouping + staging commands), but it won’t assume you want to execute the plan unless you explicitly confirm.
 
-See `docs/kmh.md` after installing.
+### Claude Code
+
+```
+/kmh:commit-atomic
+```
+
+KMH will respond with:
+1) a proposed list of commits (A, B, C…)
+2) the recommended staging commands per commit
+3) the commit message for each step
+
+✅ To proceed, reply with an explicit confirmation, e.g.:
+
+- `Proceed with the plan`
+- `Yes, proceed`
+- `Apply the plan`
+
+If you *don’t* confirm, KMH treats the response as a suggestion-only plan.
+
+### Codex / OpenCode
+
+Use:
+- `$kmh-commit-atomic` (Codex)
+- `/kmh-commit-atomic` (OpenCode)
+
+Same concept: it outputs a plan and expects confirmation before applying changes.
+
+---
+
+## Configuration (override rules)
+
+KMH supports a repo-local override file:
+
+- `kmh.config.yml`
+
+Common use cases:
+- enforce allowed types
+- map folder paths to scopes (`packages/api/**` → `api`)
+- default scope for single-package repos
+- limit subject line length (default 72)
+
+### Scope heuristics (default)
+
+If you do *nothing*, KMH tries sensible defaults:
+
+- **single-package repo**: infer scope from `package.json` name
+- **monorepo**: infer scope from common roots like:
+  - `packages/<name>/...`
+  - `apps/<name>/...`
+
+You can override with `scopeByGlob` when needed.
+
+---
+
+## Examples
+
+### Single commit
+```
+feat(auth): add refresh token rotation
+
+- Store hashed refresh tokens
+- Invalidate token family on reuse
+```
+
+### Breaking change
+```
+feat(api)!: rename user endpoint
+
+BREAKING CHANGE: /v1/user is now /v1/users/:id
+```
+
+### Atomic plan (example output)
+1) `docs(readme): document setup instructions`
+   - stage: `git add README.md`
+2) `feat(api): add pagination to list endpoint`
+   - stage: `git add packages/api/src/...`
+3) `test(api): cover pagination edge cases`
+   - stage: `git add packages/api/test/...`
+
+---
+
+## Troubleshooting
+
+### “No staged changes”
+KMH only analyzes staged changes. Stage files first:
+
+```bash
+git add -A
+```
+
+### “KMH commands not found in Claude”
+Make sure you started Claude with the plugin directory:
+
+```bash
+claude --plugin-dir ./.kmh/claude-plugin
+```
+
+If your plugin lives somewhere else, pass that folder instead (it must contain `.claude-plugin/plugin.json`).
+
+---
 
 ## License
 
-MIT — see `LICENSE`.
+MIT
